@@ -28,7 +28,7 @@ class Actor(nn.Module):
     
 model = Actor()
 model.forward(torch.rand((1,6),dtype=torch.float32).to("cpu"))
-chk = torch.load(".\\td3_80.pth")
+chk = torch.load(".\\td3_40.pth")
 model.load_state_dict(chk.get("actor state"))
 
 class FetchReachCustom(gym.Wrapper):
