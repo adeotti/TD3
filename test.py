@@ -28,7 +28,7 @@ class Actor(nn.Module):
     
 model = Actor()
 model.forward(torch.rand((1,6),dtype=torch.float32).to("cpu"))
-chk = torch.load(".\\td3_40.pth")
+chk = torch.load("data\\td3_800.pth")
 model.load_state_dict(chk.get("actor state"))
 
 class FetchReachCustom(gym.Wrapper):
@@ -66,9 +66,10 @@ def tranform_observation(observation_dict :dict):
 env = gym.make("FetchReach-v3",render_mode="human")
 env = FetchReachCustom(env)
 obs,_ = env.reset()
-for _ in range(10000):
+for _ in range(1000):
     obss = tranform_observation(obs)
     action = model(obss).detach().numpy()
+    print(action)
     _,_,done,_,_ = env.step(action)
     #if done:
         #obs,_ = env.reset()
