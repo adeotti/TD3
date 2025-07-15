@@ -3,9 +3,9 @@ from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-
 import gymnasium as gym
 from gymnasium.spaces import Box,Dict
+from gymnasium.wrappers import Autoreset
 import gymnasium_robotics
 gym.register_envs(gymnasium_robotics)
 
@@ -26,7 +26,7 @@ class Actor(nn.Module):
     
 model = Actor()
 model.forward(torch.rand((1,9),dtype=torch.float32).to("cpu"))
-chk = torch.load("data\\td3_400.pth")
+chk = torch.load("data\\td3_1999.pth")
 model.load_state_dict(chk.get("actor state"))
 
 class FetchReachCustom(gym.Wrapper):
@@ -52,22 +52,26 @@ class FetchReachCustom(gym.Wrapper):
     
     def reset(self,seed=None, options=None):
         observation,info = self.env.reset(seed=seed,options=options)
+        self.env.unwrapped.data.qpos[0] = 0.3
+        self.env.unwrapped.data.qpos[1] = 0.5
         return self.process_obs(observation),info
 
 def tranform_observation(observation_dict : Dict): 
     observation = observation_dict.get("observation")
     current_pos = observation_dict.get("achieved_goal")
     target = observation_dict.get("desired_goal")
-    assert observation.shape == target.shape, f"{observation.shape},{target.shape}"
     output = np.concatenate((observation,current_pos,target),axis=-1)
-    return torch.from_numpy(output).to(dtype=torch.float32)
+    return torch.from_numpy(output).to(device="cpu",dtype=torch.float32)
 
-env = gym.make("FetchReach-v3",render_mode="human")
+env = gym.make("FetchReach-v3",render_mode="human",max_episode_steps=50)
 env = FetchReachCustom(env)
+env = Autoreset(env)
+
 obs,_ = env.reset()
 for _ in range(1000):
     obss = tranform_observation(obs)
     action = model(obss).detach().numpy()
-    _,_,done,_,_ = env.step(action)
+    print(action)
+    _,_,done,trunc,_ = env.step(action)
     env.render()
 env.close()
