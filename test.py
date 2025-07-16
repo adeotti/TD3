@@ -1,4 +1,4 @@
-import torch,sys
+import torch
 from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
@@ -25,8 +25,8 @@ class Actor(nn.Module):
         return output
     
 model = Actor()
-model.forward(torch.rand((1,9),dtype=torch.float32).to("cpu"))
-chk = torch.load("data\\td3_1999.pth")
+model.forward(torch.rand((1,6),dtype=torch.float32).to("cpu"))
+chk = torch.load(".\model_100.pth")
 model.load_state_dict(chk.get("actor state"))
 
 class FetchReachCustom(gym.Wrapper):
@@ -57,21 +57,20 @@ class FetchReachCustom(gym.Wrapper):
         return self.process_obs(observation),info
 
 def tranform_observation(observation_dict : Dict): 
-    observation = observation_dict.get("observation")
+    #observation = observation_dict.get("observation")
     current_pos = observation_dict.get("achieved_goal")
     target = observation_dict.get("desired_goal")
-    output = np.concatenate((observation,current_pos,target),axis=-1)
+    output = np.concatenate((current_pos,target),axis=-1)
     return torch.from_numpy(output).to(device="cpu",dtype=torch.float32)
 
-env = gym.make("FetchReach-v3",render_mode="human",max_episode_steps=50)
+env = gym.make("FetchReachDense-v3",render_mode="human",max_episode_steps=100)
 env = FetchReachCustom(env)
 env = Autoreset(env)
 
 obs,_ = env.reset()
-for _ in range(1000):
+for _ in range(10000):
     obss = tranform_observation(obs)
     action = model(obss).detach().numpy()
-    print(action)
-    _,_,done,trunc,_ = env.step(action)
+    obs,_,done,trunc,_ = env.step(action)
     env.render()
 env.close()
