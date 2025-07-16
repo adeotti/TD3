@@ -1,0 +1,10 @@
+Author's PyTorch implementation of TD3 : Scott Fujimoto
+https://github.com/sfujim/TD3
+
+Original paper : Addressing Function Approximation Error in Actor-Critic Methods
+https://arxiv.org/abs/1802.09477
+
+Mastering Continuous Robotic Control with TD3 | Twin Delayed Deep Deterministic Policy Gradients : 
+Machine Learning with Phil
+https://www.youtube.com/watch?v=ZhFO8EWADmY
+
