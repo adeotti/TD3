@@ -68,9 +68,12 @@ env = FetchReachCustom(env)
 env = Autoreset(env)
 
 obs,_ = env.reset()
+previous_action = 0
 for _ in range(10000):
     obss = tranform_observation(obs)
-    action = model(obss).detach().numpy()
+    action = model(obss).detach().numpy() 
+    #smth = 0.99*previous_action + (1 - 0.99)*action
     obs,_,done,trunc,_ = env.step(action)
+    previous_action = action
     env.render()
 env.close()
